@@ -9,6 +9,17 @@ import { formatNumber } from '../lib/storage'
  * Barra de navegación sticky con scrollspy, progreso de lectura, contador en
  * vivo y menú móvil.
  */
+function ReaderPill({ readers }) {
+  return (
+    <div className="flex shrink-0 items-center gap-2 rounded-full border border-ink/10 bg-white/70 px-3 py-1.5">
+      <LiveDot />
+      <span className="whitespace-nowrap text-[11px] font-semibold text-ink">
+        {readers} leyendo ahora
+      </span>
+    </div>
+  )
+}
+
 export default function Navbar({ readers, visits, onOpenTestimonial }) {
   const [scrolled, setScrolled] = useState(false)
   const [progress, setProgress] = useState(0)
@@ -97,7 +108,7 @@ export default function Navbar({ readers, visits, onOpenTestimonial }) {
             : 'border-transparent bg-ivory/85 backdrop-blur'
         }`}
       >
-        <div className="container-page flex h-[72px] items-center justify-between gap-4">
+        <div className="mx-auto flex h-[72px] w-full max-w-7xl items-center justify-between gap-4 px-5 sm:px-8 lg:px-10 xl:max-w-[86rem]">
           <Logo onClick={() => setMenuOpen(false)} />
 
           <nav aria-label="Navegación principal" className="hidden items-center gap-1 lg:flex">
@@ -107,10 +118,10 @@ export default function Navbar({ readers, visits, onOpenTestimonial }) {
                 href={`#${link.id}`}
                 onClick={() => handleNavClick(link.id)}
                 aria-current={activeSection === link.id ? 'true' : undefined}
-                className={`rounded-full px-3 py-2 text-[13px] font-semibold transition ${
+                className={`whitespace-nowrap rounded-full px-2.5 py-2 text-xs font-semibold transition 2xl:px-3 2xl:text-[13px] ${
                   activeSection === link.id
                     ? 'bg-ink text-white shadow-sm'
-                    : 'text-ink/65 hover:bg-ink/5 hover:text-ink'
+                    : 'text-muted hover:bg-ink/5 hover:text-ink'
                 }`}
               >
                 {link.label}
@@ -119,15 +130,10 @@ export default function Navbar({ readers, visits, onOpenTestimonial }) {
           </nav>
 
           <div className="flex items-center gap-3">
-            <div className="hidden items-center gap-3 xl:flex">
-              <div className="flex items-center gap-2 rounded-full border border-ink/10 bg-white/70 px-3 py-1.5">
-                <LiveDot />
-                <span className="text-[11px] font-semibold text-ink">
-                  {readers} leyendo ahora
-                </span>
-              </div>
+            <div className="hidden shrink-0 items-center gap-3 min-[1360px]:flex">
+              <ReaderPill readers={readers} />
               <div className="text-right leading-tight">
-                <p className="text-[10px] uppercase tracking-[0.12em] text-ink/45">
+                <p className="text-[10px] uppercase tracking-[0.12em] text-muted">
                   Visitas por la dignidad
                 </p>
                 <p className="font-display text-sm font-extrabold text-ink">
@@ -136,10 +142,14 @@ export default function Navbar({ readers, visits, onOpenTestimonial }) {
               </div>
             </div>
 
+            <div className="hidden shrink-0 xl:flex min-[1360px]:hidden">
+              <ReaderPill readers={readers} />
+            </div>
+
             <button
               type="button"
               onClick={onOpenTestimonial}
-              className="btn-primary hidden !px-4 !py-2.5 text-[13px] sm:inline-flex"
+              className="btn-primary hidden whitespace-nowrap !px-4 !py-2.5 text-[13px] sm:inline-flex"
             >
               <PenLine className="h-4 w-4" aria-hidden="true" />
               Contar mi historia
@@ -174,7 +184,7 @@ export default function Navbar({ readers, visits, onOpenTestimonial }) {
                   className={`flex items-center justify-between rounded-xl px-4 py-3 text-sm font-semibold transition ${
                     activeSection === link.id
                       ? 'bg-ink text-white'
-                      : 'text-ink/75 hover:bg-ink/5 hover:text-ink'
+                      : 'text-muted hover:bg-ink/5 hover:text-ink'
                   }`}
                 >
                   {link.label}
@@ -190,21 +200,21 @@ export default function Navbar({ readers, visits, onOpenTestimonial }) {
 
             <div className="grid grid-cols-2 gap-3">
               <div className="rounded-2xl border border-ink/10 bg-white p-4">
-                <p className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.14em] text-ink/45">
+                <p className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.14em] text-muted">
                   <LiveDot />
                   En vivo
                 </p>
                 <p className="mt-2 font-display text-xl font-extrabold text-ink">{readers}</p>
-                <p className="text-xs text-ink/60">personas leyendo ahora</p>
+                <p className="text-xs text-muted">personas leyendo ahora</p>
               </div>
               <div className="rounded-2xl border border-ink/10 bg-white p-4">
-                <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-ink/45">
+                <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-muted">
                   Visitas por la dignidad
                 </p>
                 <p className="mt-2 font-display text-xl font-extrabold text-ink">
                   {formatNumber(visits)}+
                 </p>
-                <p className="text-xs text-ink/60">desde toda Bolivia</p>
+                <p className="text-xs text-muted">desde toda Bolivia</p>
               </div>
             </div>
 

@@ -333,3 +333,70 @@ export const SHARE_CARDS = [
 ]
 
 export const DIAGNOSIS_ZONES = ['Pérez Velasco', 'Av. Buenos Aires', 'Plaza Eguino', 'El Alto']
+
+/** Indicadores del diagnóstico social comunitario en La Paz y Bolivia. */
+export const REALITY_STATS = [
+  {
+    id: 'informalidad',
+    value: 86.2,
+    decimals: 1,
+    suffix: '%',
+    label: 'de empleo informal en Bolivia',
+    detail: '8 de cada 10 trabajadores no tienen contrato ni beneficios sociales.',
+    tone: 'sage',
+    kind: 'ring',
+  },
+  {
+    id: 'jornada',
+    value: 80,
+    suffix: '%',
+    label: 'trabaja más de 8 a 12 horas diarias',
+    detail: 'Bajo sol intenso, lluvia y humo vehicular, sin pausas reales.',
+    tone: 'peach',
+    kind: 'bar',
+  },
+  {
+    id: 'descanso',
+    value: 93,
+    suffix: '%',
+    label: 'casi no tiene días de descanso',
+    detail: 'La jornada no termina cuando cae la noche: sigue el recuento y la compra.',
+    tone: 'coral',
+    kind: 'bar',
+  },
+  {
+    id: 'seguro',
+    value: 53.3,
+    decimals: 1,
+    suffix: '%',
+    label: 'no cuenta con ningún seguro de salud',
+    detail: 'Solo el 7% tiene seguro formal; el resto paga medicinas de su bolsillo.',
+    tone: 'ivory',
+    kind: 'ring',
+  },
+  {
+    id: 'decomisos',
+    value: 73,
+    suffix: '%',
+    label: 'sufrió decomisos, multas o desalojos',
+    detail: 'Multas que muchas veces cuestan más que su propia mercadería.',
+    tone: 'peach',
+    kind: 'bar',
+  },
+  {
+    id: 'discriminacion',
+    value: 93,
+    suffix: '%',
+    label: 'percibe indiferencia o discriminación',
+    detail: 'En la calle, el trato digno sigue siendo una deuda pendiente.',
+    tone: 'coral',
+    kind: 'bar',
+  },
+]
+
+/** Ingresos diarios frente al salario mínimo nacional. */
+export const INCOME_DATA = {
+  dailyMin: 20,
+  dailyMax: 80,
+  minimumWage: 3300,
+}

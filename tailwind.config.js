@@ -11,6 +11,8 @@ export default {
         sage: '#9DBEB8', // calma, confianza y salud
         ivory: '#FAF9F6', // marfil editorial
         white: '#FFFFFF',
+        // Teal atenuado con contraste AA sobre marfil y blanco
+        muted: '#4A6670',
       },
       fontFamily: {
         display: ['"Plus Jakarta Sans"', 'ui-sans-serif', 'system-ui', 'sans-serif'],

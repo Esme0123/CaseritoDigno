@@ -85,7 +85,7 @@ export default function Modal({ open, onClose, title, description, children }) {
       >
         <div className="sticky top-0 z-10 flex items-start justify-between gap-4 border-b border-ink/10 bg-white/95 px-6 py-5 backdrop-blur sm:px-8">
           <div>
-            <p className="eyebrow text-ink/50">
+            <p className="eyebrow text-muted">
               <span className="h-px w-6 bg-coral" aria-hidden="true" />
               Tu voz importa
             </p>
@@ -96,7 +96,7 @@ export default function Modal({ open, onClose, title, description, children }) {
               {title}
             </h2>
             {description && (
-              <p id="testimonial-modal-description" className="mt-1 text-sm text-ink/60">
+              <p id="testimonial-modal-description" className="mt-1 text-sm text-muted">
                 {description}
               </p>
             )}
@@ -105,7 +105,7 @@ export default function Modal({ open, onClose, title, description, children }) {
             type="button"
             onClick={onClose}
             aria-label="Cerrar"
-            className="grid h-10 w-10 shrink-0 place-items-center rounded-full border border-ink/10 bg-ivory text-ink/70 transition hover:bg-ink hover:text-white"
+            className="grid h-10 w-10 shrink-0 place-items-center rounded-full border border-ink/10 bg-ivory text-muted transition hover:bg-ink hover:text-white"
           >
             <X className="h-5 w-5" aria-hidden="true" />
           </button>

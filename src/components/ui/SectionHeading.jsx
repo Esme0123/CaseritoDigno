@@ -17,7 +17,7 @@ export default function SectionHeading({
     >
       <div className={`max-w-2xl ${align === 'center' ? 'mx-auto' : ''}`}>
         {eyebrow && (
-          <p className={`eyebrow ${isDark ? 'text-sage' : 'text-ink/55'}`}>
+          <p className={`eyebrow ${isDark ? 'text-sage' : 'text-muted'}`}>
             <span className="h-px w-7 bg-coral" aria-hidden="true" />
             {eyebrow}
           </p>
@@ -32,7 +32,7 @@ export default function SectionHeading({
         {description && (
           <p
             className={`mt-4 text-base leading-relaxed ${
-              isDark ? 'text-white/70' : 'text-ink/65'
+              isDark ? 'text-white/70' : 'text-muted'
             }`}
           >
             {description}

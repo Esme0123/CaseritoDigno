@@ -1,13 +1,6 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { AlertCircle, CheckCircle2, Info, X } from 'lucide-react'
-
-const ToastContext = createContext(null)
-
-export function useToast() {
-  const context = useContext(ToastContext)
-  if (!context) throw new Error('useToast debe usarse dentro de ToastProvider')
-  return context
-}
+import { ToastContext } from '../../hooks/useToast'
 
 const ICONS = {
   success: CheckCircle2,
@@ -62,7 +55,7 @@ export function ToastProvider({ children }) {
               type="button"
               onClick={dismiss}
               aria-label="Cerrar notificación"
-              className="rounded-full p-1.5 text-white/50 transition hover:bg-white/10 hover:text-white"
+              className="rounded-full p-1.5 text-white/70 transition hover:bg-white/10 hover:text-white"
             >
               <X className="h-4 w-4" aria-hidden="true" />
             </button>
