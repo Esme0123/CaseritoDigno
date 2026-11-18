@@ -1,0 +1,145 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ============================================================
+   Caserito Digno — Sistema de diseño
+   Paleta, tipografía y utilidades base de la campaña.
+   ============================================================ */
+
+:root {
+  --caserito-ink: #194350;
+  --caserito-coral: #ff8382;
+  --caserito-peach: #ffc2b4;
+  --caserito-sage: #9dbeb8;
+  --caserito-ivory: #faf9f6;
+  --caserito-white: #ffffff;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    @apply bg-ivory font-sans text-ink antialiased;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    @apply font-display;
+    text-wrap: balance;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+
+  ::selection {
+    background-color: var(--caserito-peach);
+    color: var(--caserito-ink);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--caserito-ink);
+    outline-offset: 3px;
+  }
+
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: var(--caserito-ivory);
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: var(--caserito-sage);
+    border: 2px solid var(--caserito-ivory);
+    border-radius: 999px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+@layer components {
+  .container-page {
+    @apply mx-auto w-full max-w-7xl px-5 sm:px-8 lg:px-10;
+  }
+
+  .section-pad {
+    @apply py-20 sm:py-24 lg:py-28;
+  }
+
+  .eyebrow {
+    @apply inline-flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.22em];
+  }
+
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 rounded-full border border-transparent bg-coral px-5 py-3 text-sm font-semibold text-ink transition duration-200 hover:-translate-y-0.5 hover:bg-peach hover:shadow-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/50 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-70;
+  }
+
+  .btn-dark {
+    @apply inline-flex items-center justify-center gap-2 rounded-full border border-transparent bg-ink px-5 py-3 text-sm font-semibold text-white transition duration-200 hover:-translate-y-0.5 hover:bg-[#123543] hover:shadow-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/50 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-70;
+  }
+
+  .btn-light {
+    @apply inline-flex items-center justify-center gap-2 rounded-full border border-ink/15 bg-white px-5 py-3 text-sm font-semibold text-ink transition duration-200 hover:-translate-y-0.5 hover:border-ink/30 hover:shadow-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/40 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-70;
+  }
+
+  .field {
+    @apply w-full rounded-xl border border-ink/15 bg-ivory px-4 py-3 text-sm text-ink transition placeholder:text-ink/40 focus:border-ink/40 focus:outline-none focus:ring-2 focus:ring-sage/70;
+  }
+
+  .label {
+    @apply mb-1.5 block text-xs font-semibold uppercase tracking-[0.12em] text-ink/70;
+  }
+
+  .surface {
+    @apply rounded-3xl border border-ink/10 bg-white;
+  }
+}
+
+@layer utilities {
+  .bg-dots {
+    background-image: radial-gradient(rgba(25, 67, 80, 0.14) 1px, transparent 1px);
+    background-size: 18px 18px;
+  }
+
+  .bg-dots-light {
+    background-image: radial-gradient(rgba(255, 255, 255, 0.14) 1px, transparent 1px);
+    background-size: 20px 20px;
+  }
+
+  .text-shadow-soft {
+    text-shadow: 0 2px 24px rgba(25, 67, 80, 0.18);
+  }
+
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}
