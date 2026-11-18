@@ -170,6 +170,7 @@ export const PLACES = [
     category: 'comunitario',
     categoryLabel: 'Apoyo comunitario',
     icon: 'heart',
+    zone: 'Calle Potosí · Zona Central',
     address: 'Calle Potosí esq. Loayza, zona Central, La Paz',
     hours: 'Lunes a viernes · 08:00 a 16:30',
     services: [
@@ -186,6 +187,7 @@ export const PLACES = [
     category: 'derechos',
     categoryLabel: 'Asesoría y derechos',
     icon: 'landmark',
+    zone: 'Calle Colombia · Zona Central',
     address: 'Calle Colombia esq. Potosí, zona Central, La Paz',
     hours: 'Lunes a viernes · 08:30 a 16:30',
     services: [
@@ -201,6 +203,7 @@ export const PLACES = [
     category: 'salud',
     categoryLabel: 'Salud y atención',
     icon: 'stethoscope',
+    zone: 'Pérez Velasco',
     address: 'Calle San Sebastián, junto a la Pérez Velasco, La Paz',
     hours: 'Lunes a sábado · desde las 07:00',
     services: [
@@ -217,6 +220,7 @@ export const PLACES = [
     category: 'salud',
     categoryLabel: 'Salud y atención',
     icon: 'heart-pulse',
+    zone: 'Plaza Eguino · Villa Dolores',
     address: 'Av. Buenos Aires, Plaza Eguino, zona Villa Dolores, La Paz',
     hours: 'Lunes a viernes · 07:30 a 15:30',
     services: [
@@ -232,6 +236,7 @@ export const PLACES = [
     category: 'comunitario',
     categoryLabel: 'Apoyo comunitario',
     icon: 'baby',
+    zone: 'Mercado Rodríguez',
     address: 'Zona Central, a pocas cuadras del Mercado Rodríguez, La Paz',
     hours: 'Lunes a viernes · 07:30 a 17:30',
     services: [
@@ -248,6 +253,7 @@ export const PLACES = [
     category: 'comunitario',
     categoryLabel: 'Apoyo comunitario',
     icon: 'book',
+    zone: 'San Pedro',
     address: 'Zona San Pedro, cerca del mercado, La Paz',
     hours: 'Lunes a sábado · 15:00 a 19:00',
     services: [
@@ -263,6 +269,7 @@ export const PLACES = [
     category: 'derechos',
     categoryLabel: 'Asesoría y derechos',
     icon: 'scale',
+    zone: 'Campus universitario',
     address: 'Campus universitario, zona central de La Paz',
     hours: 'Lunes a viernes · 09:00 a 17:00',
     services: [

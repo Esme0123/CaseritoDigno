@@ -143,3 +143,212 @@
     scrollbar-width: none;
   }
 }
+
+/* ============================================================
+   Tarjetas interactivas inspiradas en React Bits
+   Magic Bento · Chroma Grid · Drift Wall
+   ============================================================ */
+
+.magic-card {
+  --mouse-x: 50%;
+  --mouse-y: 50%;
+  position: relative;
+  isolation: isolate;
+}
+
+.magic-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  border-radius: inherit;
+  padding: 1.5px;
+  background: radial-gradient(
+    260px circle at var(--mouse-x) var(--mouse-y),
+    rgba(255, 131, 130, 0.9),
+    rgba(157, 190, 184, 0.65) 42%,
+    transparent 72%
+  );
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  mask-composite: exclude;
+  opacity: 0;
+  transition: opacity 0.35s ease;
+  pointer-events: none;
+}
+
+.magic-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  border-radius: inherit;
+  background: radial-gradient(
+    320px circle at var(--mouse-x) var(--mouse-y),
+    rgba(255, 131, 130, 0.16),
+    rgba(157, 190, 184, 0.12) 45%,
+    transparent 72%
+  );
+  opacity: 0;
+  transition: opacity 0.35s ease;
+  pointer-events: none;
+}
+
+.magic-card:hover::before,
+.magic-card:focus-within::before,
+.magic-card:hover::after,
+.magic-card:focus-within::after {
+  opacity: 1;
+}
+
+.bento-ripple {
+  position: absolute;
+  z-index: 2;
+  width: 320px;
+  height: 320px;
+  margin-left: -160px;
+  margin-top: -160px;
+  border-radius: 9999px;
+  background: radial-gradient(
+    circle,
+    rgba(255, 131, 130, 0.45) 0%,
+    rgba(157, 190, 184, 0.22) 45%,
+    transparent 70%
+  );
+  pointer-events: none;
+  animation: bento-ripple 0.85s ease-out forwards;
+}
+
+@keyframes bento-ripple {
+  0% {
+    transform: scale(0.1);
+    opacity: 0.7;
+  }
+  100% {
+    transform: scale(1.15);
+    opacity: 0;
+  }
+}
+
+.chroma-card {
+  --chroma-x: 50%;
+  --chroma-y: 40%;
+  isolation: isolate;
+}
+
+.chroma-spotlight {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  border-radius: inherit;
+  background: radial-gradient(
+    240px circle at var(--chroma-x) var(--chroma-y),
+    rgba(157, 190, 184, 0.18),
+    rgba(255, 194, 180, 0.12) 45%,
+    transparent 72%
+  );
+  opacity: 0;
+  transition: opacity 0.35s ease;
+  pointer-events: none;
+}
+
+.chroma-card:hover .chroma-spotlight,
+.chroma-card:focus-within .chroma-spotlight {
+  opacity: 1;
+}
+
+.chroma-base {
+  filter: grayscale(1) contrast(0.95);
+  opacity: 0.95;
+  transition: filter 0.5s ease;
+}
+
+.chroma-color {
+  opacity: 0;
+  transition: opacity 0.25s ease;
+  -webkit-mask-image: radial-gradient(
+    circle 170px at var(--chroma-x) var(--chroma-y),
+    #000 0%,
+    rgba(0, 0, 0, 0.85) 42%,
+    transparent 72%
+  );
+  mask-image: radial-gradient(
+    circle 170px at var(--chroma-x) var(--chroma-y),
+    #000 0%,
+    rgba(0, 0, 0, 0.85) 42%,
+    transparent 72%
+  );
+}
+
+.chroma-card:hover .chroma-color,
+.chroma-card:focus-within .chroma-color {
+  opacity: 1;
+}
+
+.drift-item {
+  perspective: 1200px;
+}
+
+.drift-float {
+  animation: drift-float 8s ease-in-out infinite;
+}
+
+.drift-card {
+  transform: rotate(var(--tilt, 0deg)) rotateY(var(--tilt-y, 0deg));
+  transform-style: preserve-3d;
+  transition:
+    transform 0.5s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.35s ease,
+    border-color 0.35s ease;
+  will-change: transform;
+}
+
+.drift-item:hover .drift-card,
+.drift-item:focus-within .drift-card {
+  transform: translateY(-8px) scale(1.03) rotate(0deg) rotateY(0deg);
+  border-color: var(--caserito-coral);
+  box-shadow:
+    0 30px 60px -34px rgba(25, 67, 80, 0.5),
+    0 0 0 1px rgba(255, 131, 130, 0.55);
+}
+
+.drift-item:hover .drift-float,
+.drift-item:focus-within .drift-float {
+  animation-play-state: paused;
+}
+
+@keyframes drift-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-7px);
+  }
+}
+
+@media (hover: none), (pointer: coarse) {
+  .magic-card::before,
+  .magic-card::after,
+  .chroma-spotlight {
+    display: none;
+  }
+
+  .chroma-base {
+    filter: none;
+    opacity: 1;
+  }
+
+  .chroma-color {
+    display: none;
+  }
+
+  .drift-card {
+    transform: none;
+  }
+
+  .drift-float {
+    animation: none;
+  }
+}
