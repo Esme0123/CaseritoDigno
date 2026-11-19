@@ -352,3 +352,117 @@
     animation: none;
   }
 }
+
+/* ============================================================
+   Postales gráficas · tipografía proporcional al ancho
+   ============================================================ */
+
+.postcard {
+  container-type: inline-size;
+}
+
+.postcard-kicker {
+  font-size: 2.45cqw;
+  letter-spacing: 0.18em;
+  line-height: 1.2;
+}
+
+.postcard-number {
+  font-size: 13cqw;
+  line-height: 0.9;
+}
+
+.postcard-body {
+  font-size: 4.05cqw;
+  line-height: 1.35;
+}
+
+.postcard-footer {
+  font-size: 2.3cqw;
+  line-height: 1.35;
+}
+
+/* ============================================================
+   Galería · Bounce Cards (inspirado en React Bits)
+   ============================================================ */
+
+.bounce-fan {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3.25rem 0 2.5rem;
+}
+
+.bounce-card {
+  width: clamp(96px, 19vw, 232px);
+  aspect-ratio: 4 / 5;
+  flex: 0 0 auto;
+  opacity: 0;
+  transform: translateY(72px) scale(0.72) rotate(var(--rot, 0deg));
+  transform-origin: 50% 82%;
+  transition:
+    transform 0.85s cubic-bezier(0.34, 1.56, 0.64, 1),
+    opacity 0.55s ease,
+    box-shadow 0.35s ease;
+  transition-delay: var(--delay, 0ms), var(--delay, 0ms), 0ms;
+  will-change: transform;
+}
+
+.bounce-card + .bounce-card {
+  margin-left: clamp(-58px, -4vw, -30px);
+}
+
+.bounce-stage.is-in .bounce-card {
+  opacity: 1;
+  transform: translateY(0) scale(1) rotate(var(--rot, 0deg)) translateX(var(--shift, 0px));
+}
+
+.bounce-stage.is-in .bounce-card.is-active {
+  z-index: 30;
+  transform: translateY(-14px) scale(1.08) rotate(0deg) translateX(0px);
+  transition-delay: 0ms;
+}
+
+.bounce-stage.is-in.has-active .bounce-card {
+  transition-delay: 0ms;
+}
+
+.bounce-card:focus-visible {
+  outline: 3px solid var(--caserito-coral);
+  outline-offset: 4px;
+}
+
+.bounce-caption {
+  opacity: 0;
+  transform: translateY(12px);
+  transition:
+    opacity 0.3s ease,
+    transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.bounce-card.is-active .bounce-caption,
+.bounce-card:focus-visible .bounce-caption {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+@media (max-width: 640px) {
+  .bounce-fan {
+    padding: 2.25rem 0 1.5rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bounce-card {
+    opacity: 1;
+    transform: rotate(var(--rot, 0deg));
+  }
+
+  .bounce-stage.is-in .bounce-card {
+    transform: rotate(var(--rot, 0deg)) translateX(var(--shift, 0px));
+  }
+
+  .bounce-stage.is-in .bounce-card.is-active {
+    transform: translateY(-14px) scale(1.08);
+  }
+}

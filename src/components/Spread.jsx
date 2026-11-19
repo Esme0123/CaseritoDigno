@@ -1,24 +1,33 @@
-import { useRef, useState } from 'react'
+import { useCallback, useRef, useState } from 'react'
 import {
   Check,
   Coins,
-  Copy,
+  Download,
   Eye,
   Facebook,
   HeartHandshake,
+  Instagram,
+  Loader2,
   Megaphone,
-  MessageCircle,
+  Music2,
   Share2,
   Shield,
+  Smartphone,
   Sparkles,
+  Square,
   Twitter,
 } from 'lucide-react'
 import Reveal from './ui/Reveal'
 import SectionHeading from './ui/SectionHeading'
-import DriftWall, { DriftCard } from './ui/DriftWall'
+import PostcardArt from './ui/PostcardArt'
 import { useToast } from '../hooks/useToast'
-import { COMMITMENTS, SHARE_CARDS } from '../data/content'
+import { COMMITMENTS, POSTCARDS, POSTCARD_FORMATS } from '../data/content'
 import { formatNumber } from '../lib/storage'
+import {
+  drawPostcard,
+  POSTCARD_SITE_URL,
+  waitForPostcardFonts,
+} from '../lib/postcardCanvas'
 
 const COMMITMENT_ICONS = { eye: Eye, coins: Coins, shield: Shield, megaphone: Megaphone }
 
@@ -29,127 +38,196 @@ const COMMITMENT_TONES = {
   coral: 'border-ink/10 bg-coral text-ink',
 }
 
-const SHARE_TONES = {
-  ink: 'border-white/15 bg-ink text-white',
-  peach: 'border-ink/10 bg-peach text-ink',
-  coral: 'border-ink/10 bg-coral text-ink',
+const TIKTOK_HASHTAGS = '#CaseritoDigno #LaPaz #TrabajoDigno #Bolivia'
+
+const DESKTOP_MESSAGES = {
+  instagram: 'Imagen descargada lista para subir a tu Historia o Post de Instagram',
+  facebook: 'Imagen descargada. Adjúntala en tu publicación de Facebook.',
 }
 
-const TILTS = [
-  { tilt: -2.4, tiltY: 4 },
-  { tilt: 1.8, tiltY: -3 },
-  { tilt: -1.2, tiltY: 3 },
-  { tilt: 2.6, tiltY: -4 },
-  { tilt: -2, tiltY: 2 },
-  { tilt: 1.4, tiltY: -2 },
-  { tilt: -1.8, tiltY: 4 },
-]
+const MOBILE_MESSAGES = {
+  instagram: 'Elige Instagram en el menú para publicar tu postal.',
+  facebook: 'Elige Facebook en el menú para publicar tu postal.',
+}
 
-const OFFSETS = [
-  '',
-  'xl:-translate-y-3',
-  'xl:translate-y-4',
-  'xl:-translate-y-1',
-  'xl:translate-y-3',
-  'xl:-translate-y-4',
-  'xl:translate-y-2',
-]
+function isCoarsePointer() {
+  if (typeof window === 'undefined') return false
+  return window.matchMedia?.('(pointer: coarse)').matches || navigator.maxTouchPoints > 0
+}
 
-const WALL_ITEMS = [
-  { kind: 'commitment', data: COMMITMENTS[0] },
-  { kind: 'commitment', data: COMMITMENTS[1] },
-  { kind: 'share', data: SHARE_CARDS[0] },
-  { kind: 'commitment', data: COMMITMENTS[2] },
-  { kind: 'share', data: SHARE_CARDS[1] },
-  { kind: 'commitment', data: COMMITMENTS[3] },
-  { kind: 'share', data: SHARE_CARDS[2] },
-]
+function canShareFile(file) {
+  try {
+    return Boolean(
+      typeof navigator !== 'undefined' &&
+        navigator.share &&
+        navigator.canShare &&
+        navigator.canShare({ files: [file] }),
+    )
+  } catch {
+    return false
+  }
+}
 
-function openShareWindow(url) {
-  if (typeof window === 'undefined') return
-  window.open(url, '_blank', 'noopener,noreferrer')
+function downloadBlob(blob, filename) {
+  const url = URL.createObjectURL(blob)
+  const link = document.createElement('a')
+  link.href = url
+  link.download = filename
+  document.body.appendChild(link)
+  link.click()
+  link.remove()
+  window.setTimeout(() => URL.revokeObjectURL(url), 1500)
+}
+
+async function copyToClipboard(text) {
+  const fallbackCopy = () => {
+    const textarea = document.createElement('textarea')
+    textarea.value = text
+    textarea.setAttribute('readonly', '')
+    textarea.style.position = 'fixed'
+    textarea.style.opacity = '0'
+    document.body.appendChild(textarea)
+    textarea.select()
+    const copied = document.execCommand('copy')
+    document.body.removeChild(textarea)
+    return copied
+  }
+
+  try {
+    if (navigator.clipboard?.writeText) {
+      await navigator.clipboard.writeText(text)
+      return true
+    }
+    return fallbackCopy()
+  } catch {
+    return fallbackCopy()
+  }
+}
+
+function ActionButton({ icon: Icon, label, onClick, busy, disabled, tone = 'light' }) {
+  const tones = {
+    light: 'border-ink/10 bg-ivory text-ink hover:border-ink/25 hover:bg-white',
+    coral: 'border-coral/40 bg-coral/15 text-ink hover:bg-coral hover:text-ink',
+    dark: 'border-ink bg-ink text-white hover:bg-[#123543]',
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      className={`inline-flex items-center justify-center gap-2 rounded-full border px-3 py-2.5 text-xs font-bold transition disabled:cursor-wait disabled:opacity-60 ${tones[tone]}`}
+    >
+      {busy ? (
+        <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+      ) : (
+        <Icon className="h-4 w-4" aria-hidden="true" />
+      )}
+      <span>{label}</span>
+    </button>
+  )
 }
 
 export default function Spread({ pledge, onPledge }) {
   const { notify } = useToast()
-  const [copiedId, setCopiedId] = useState(null)
-  const copyTimer = useRef(null)
-  const pageUrl = typeof window !== 'undefined' ? window.location.href : ''
+  const canvasRef = useRef(null)
+  const [format, setFormat] = useState('story')
+  const [busyKey, setBusyKey] = useState(null)
 
-  const shareText = (card) => `${card.quote} ${card.caption}`
+  const activeFormat = POSTCARD_FORMATS[format] ?? POSTCARD_FORMATS.story
 
-  const copyMessage = async (text, id, message) => {
-    const fallbackCopy = () => {
-      const textarea = document.createElement('textarea')
-      textarea.value = text
-      textarea.setAttribute('readonly', '')
-      textarea.style.position = 'fixed'
-      textarea.style.opacity = '0'
-      document.body.appendChild(textarea)
-      textarea.select()
-      const copied = document.execCommand('copy')
-      document.body.removeChild(textarea)
-      return copied
-    }
+  const renderPostcardBlob = useCallback(async (card, formatId) => {
+    const canvas = canvasRef.current
+    if (!canvas) throw new Error('canvas-unavailable')
 
-    try {
-      if (navigator.clipboard?.writeText) {
-        try {
-          await navigator.clipboard.writeText(text)
-        } catch {
-          if (!fallbackCopy()) throw new Error('copy-failed')
-        }
-      } else if (!fallbackCopy()) {
-        throw new Error('copy-failed')
+    await waitForPostcardFonts()
+    drawPostcard(canvas, card, formatId)
+
+    return new Promise((resolve, reject) => {
+      canvas.toBlob((blob) => {
+        if (blob) resolve(blob)
+        else reject(new Error('png-export-failed'))
+      }, 'image/png')
+    })
+  }, [])
+
+  const buildFilename = (card, formatId) => {
+    const kind = formatId === 'post' ? 'post-4x5' : 'historia-9x16'
+    return `caserito-digno-postal-${card.number}-${kind}.png`
+  }
+
+  const downloadPostcard = useCallback(
+    async (card, formatId = format) => {
+      const key = `${card.id}:download:${formatId}`
+      setBusyKey(key)
+      try {
+        const blob = await renderPostcardBlob(card, formatId)
+        downloadBlob(blob, buildFilename(card, formatId))
+        notify(
+          `Postal descargada en ${formatId === 'post' ? '4:5' : '9:16'} lista para compartir.`,
+        )
+      } catch {
+        notify('No pudimos generar la imagen. Intenta nuevamente.', 'error')
+      } finally {
+        setBusyKey(null)
       }
+    },
+    [format, notify, renderPostcardBlob],
+  )
 
-      setCopiedId(id)
-      notify(message)
-      window.clearTimeout(copyTimer.current)
-      copyTimer.current = window.setTimeout(() => setCopiedId(null), 2600)
-    } catch {
-      notify('No pudimos copiar el mensaje. Selecciona el texto y cópialo manualmente.', 'error')
-    }
-  }
+  const sharePostcard = useCallback(
+    async (card, platform) => {
+      const key = `${card.id}:${platform}`
+      setBusyKey(key)
 
-  const copyShare = (card) =>
-    copyMessage(
-      `${shareText(card)}\n${pageUrl}\n#CaseritoDigno`,
-      card.id,
-      'Mensaje copiado. Pégalo en tu historia de Instagram o TikTok.',
-    )
+      try {
+        if (platform === 'x') {
+          const intent = `https://twitter.com/intent/tweet?text=${encodeURIComponent(
+            `${card.xPhrase} #CaseritoDigno`,
+          )}&url=${encodeURIComponent(POSTCARD_SITE_URL)}`
+          window.open(intent, '_blank', 'noopener,noreferrer')
+          return
+        }
 
-  const copyCommitment = (commitment) =>
-    copyMessage(
-      `${commitment.title}. ${commitment.text}\n${pageUrl}\n#CaseritoDigno`,
-      commitment.id,
-      'Compromiso copiado. Compártelo con tu familia y amistades.',
-    )
+        const formatId = platform === 'tiktok' ? 'story' : format
+        const blob = await renderPostcardBlob(card, formatId)
+        const filename = buildFilename(card, formatId)
+        const file = new File([blob], filename, { type: 'image/png' })
+        const title = 'Caserito Digno · La Paz'
+        const text = `${card.titleLines.join(' ')} · #CaseritoDigno`
 
-  const shareOnWhatsApp = (card) =>
-    openShareWindow(
-      `https://api.whatsapp.com/send?text=${encodeURIComponent(`${shareText(card)} ${pageUrl}`)}`,
-    )
+        if (platform === 'tiktok') {
+          downloadBlob(blob, filename)
+          const copied = await copyToClipboard(TIKTOK_HASHTAGS)
+          notify(
+            copied
+              ? 'Postal 9:16 descargada y hashtags copiados. Súbela a TikTok.'
+              : 'Postal 9:16 descargada. Usa #CaseritoDigno #LaPaz #TrabajoDigno #Bolivia.',
+            copied ? 'success' : 'info',
+          )
+          return
+        }
 
-  const shareOnFacebook = (card) =>
-    openShareWindow(
-      `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(
-        pageUrl,
-      )}&quote=${encodeURIComponent(shareText(card))}`,
-    )
+        if (isCoarsePointer() && canShareFile(file)) {
+          try {
+            await navigator.share({ files: [file], title, text })
+            notify(MOBILE_MESSAGES[platform] ?? 'Postal compartida.')
+            return
+          } catch (error) {
+            if (error?.name === 'AbortError') return
+          }
+        }
 
-  const shareOnX = (card) =>
-    openShareWindow(
-      `https://twitter.com/intent/tweet?text=${encodeURIComponent(
-        shareText(card),
-      )}&url=${encodeURIComponent(pageUrl)}`,
-    )
-
-  const handleCardActivate = (kind, data) => (event) => {
-    if (event.target.closest('button, a')) return
-    if (kind === 'share') copyShare(data)
-    else copyCommitment(data)
-  }
+        downloadBlob(blob, filename)
+        notify(DESKTOP_MESSAGES[platform] ?? 'Imagen descargada lista para compartir.', 'info')
+      } catch {
+        notify('No pudimos preparar la imagen. Intenta nuevamente.', 'error')
+      } finally {
+        setBusyKey(null)
+      }
+    },
+    [format, notify, renderPostcardBlob],
+  )
 
   return (
     <section id="difundir" className="relative section-pad bg-ivory">
@@ -161,213 +239,196 @@ export default function Spread({ pledge, onPledge }) {
       <div className="container-page relative">
         <SectionHeading
           eyebrow="Difundir la voz"
-          title="La dignidad también se practica todos los días"
-          description="La campaña no termina en esta página. Estos son los compromisos ciudadanos que pueden cambiarle el día a alguien que trabaja en la calle, y las herramientas para que más personas se sumen."
-        />
+          title="Postales gráficas para que la dignidad circule"
+          description="Elige una postal, descarga la imagen en alta resolución y publícala en tus redes. Son afiches listos para Historia, TikTok, Estado, feed de Instagram o Facebook. Sin textos largos que copiar: la imagen habla por sí sola."
+        >
+          <span className="inline-flex w-fit items-center gap-2 rounded-full border border-ink/10 bg-white px-4 py-2 text-xs font-semibold text-ink shadow-card">
+            <Share2 className="h-4 w-4 text-coral" aria-hidden="true" />
+            #CaseritoDigno
+          </span>
+        </SectionHeading>
 
-        <div className="mt-12">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <div className="mt-9 flex flex-col gap-4 rounded-3xl border border-ink/10 bg-white p-4 shadow-card lg:flex-row lg:items-center lg:justify-between lg:p-5">
+          <div className="flex items-start gap-3">
+            <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-peach text-ink">
+              <Sparkles className="h-5 w-5" aria-hidden="true" />
+            </span>
             <div>
-              <p className="eyebrow text-muted">
-                <Sparkles className="h-4 w-4 text-coral" aria-hidden="true" />
-                Muro de la dignidad
+              <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-muted">
+                Formato de exportación
               </p>
-              <h3 className="mt-3 font-display text-2xl font-extrabold leading-tight text-ink sm:text-3xl">
-                Comparte una frase, difunde un derecho
-              </h3>
-              <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted">
-                Pasa el cursor sobre las postales y compromisos. Al hacer clic, el mensaje se copia
-                listo para WhatsApp, Instagram o TikTok.
+              <p className="mt-1 text-sm font-semibold text-ink">
+                Elige el tamaño ideal para tu red social
               </p>
             </div>
-            <span className="inline-flex w-fit items-center gap-2 rounded-full border border-ink/10 bg-white px-4 py-2 text-xs font-semibold text-ink shadow-card">
-              <Share2 className="h-4 w-4 text-coral" aria-hidden="true" />
-              #CaseritoDigno
-            </span>
           </div>
 
-          <DriftWall className="mt-8">
-            {WALL_ITEMS.map(({ kind, data }, index) => {
-              const tilt = TILTS[index] ?? { tilt: 0, tiltY: 0 }
-              const isCopied = copiedId === data.id
-
-              if (kind === 'commitment') {
-                const Icon = COMMITMENT_ICONS[data.icon] ?? HeartHandshake
-                const bodyTone = data.tone === 'ivory' ? 'text-muted' : 'text-ink/80'
-
-                return (
-                  <DriftCard
-                    key={data.id}
-                    className={`${COMMITMENT_TONES[data.tone] ?? COMMITMENT_TONES.ivory} flex flex-col p-5 sm:p-6`}
-                    itemClassName={OFFSETS[index] ?? ''}
-                    tilt={tilt.tilt}
-                    tiltY={tilt.tiltY}
-                    delay={index * 240}
-                    onActivate={handleCardActivate(kind, data)}
-                  >
-                    <div className="flex items-start justify-between gap-3">
-                      <span className="grid h-11 w-11 place-items-center rounded-2xl bg-white/60 text-ink">
-                        <Icon className="h-5 w-5" aria-hidden="true" />
-                      </span>
-                      <span
-                        className="font-display text-3xl font-extrabold leading-none text-ink/15"
-                        aria-hidden="true"
-                      >
-                        {data.number}
-                      </span>
-                    </div>
-
-                    <p className="mt-4 text-[10px] font-bold uppercase tracking-[0.16em] text-ink/50">
-                      Compromiso {data.number}
-                    </p>
-                    <h4 className="mt-1 font-display text-lg font-extrabold leading-snug text-ink">
-                      {data.title}
-                    </h4>
-                    <p className={`mt-2 text-sm leading-relaxed ${bodyTone}`}>{data.text}</p>
-
-                    <div className="mt-auto flex items-center justify-between gap-3 pt-5">
-                      <span className="text-[10px] font-bold uppercase tracking-[0.12em] text-ink/45">
-                        Toca para copiar
-                      </span>
-                      <button
-                        type="button"
-                        onClick={(event) => {
-                          event.stopPropagation()
-                          copyCommitment(data)
-                        }}
-                        className="inline-flex items-center gap-1.5 rounded-full bg-ink px-3 py-2 text-[10px] font-bold uppercase tracking-[0.08em] text-white transition hover:bg-coral hover:text-ink"
-                      >
-                        {isCopied ? (
-                          <Check className="h-3.5 w-3.5" aria-hidden="true" />
-                        ) : (
-                          <Copy className="h-3.5 w-3.5" aria-hidden="true" />
-                        )}
-                        {isCopied ? 'Copiado' : 'Copiar'}
-                      </button>
-                    </div>
-                  </DriftCard>
-                )
-              }
-
-              const isDark = data.tone === 'ink'
-              const iconTone = isDark
-                ? 'bg-white/10 text-white hover:bg-sage hover:text-ink'
-                : 'bg-ink/10 text-ink hover:bg-ink hover:text-white'
+          <div
+            className="grid gap-2 sm:grid-cols-2"
+            role="group"
+            aria-label="Formato de exportación de las postales"
+          >
+            {Object.values(POSTCARD_FORMATS).map((item) => {
+              const isActive = item.id === format
+              const Icon = item.id === 'post' ? Square : Smartphone
 
               return (
-                <DriftCard
-                  key={data.id}
-                  className={`${SHARE_TONES[data.tone] ?? SHARE_TONES.ink} flex flex-col p-5 sm:p-6`}
-                  itemClassName={OFFSETS[index] ?? ''}
-                  tilt={tilt.tilt}
-                  tiltY={tilt.tiltY}
-                  delay={index * 240}
-                  onActivate={handleCardActivate(kind, data)}
+                <button
+                  key={item.id}
+                  type="button"
+                  onClick={() => setFormat(item.id)}
+                  aria-pressed={isActive}
+                  className={`flex items-center gap-3 rounded-2xl border px-4 py-3 text-left transition ${
+                    isActive
+                      ? 'border-ink bg-ink text-white shadow-card'
+                      : 'border-ink/10 bg-ivory text-muted hover:border-ink/25 hover:text-ink'
+                  }`}
                 >
-                  <div className="flex items-center justify-between gap-3">
-                    <p
-                      className={`text-[10px] font-bold uppercase tracking-[0.16em] ${
-                        isDark ? 'text-sage' : 'text-ink/60'
+                  <Icon className="h-4 w-4 shrink-0" aria-hidden="true" />
+                  <span>
+                    <span className="block text-xs font-bold">{item.label}</span>
+                    <span
+                      className={`mt-0.5 block text-[10px] font-semibold uppercase tracking-[0.12em] ${
+                        isActive ? 'text-sage' : 'text-muted/80'
                       }`}
                     >
-                      Postal para compartir
-                    </p>
-                    <Sparkles
-                      className={`h-4 w-4 ${isDark ? 'text-sage' : 'text-ink/50'}`}
-                      aria-hidden="true"
+                      {item.ratio} · {item.width} × {item.height} px
+                    </span>
+                  </span>
+                </button>
+              )
+            })}
+          </div>
+        </div>
+
+        <div className="mt-8 grid gap-6 md:grid-cols-2 xl:grid-cols-4">
+          {POSTCARDS.map((card) => {
+            const isBusy = Boolean(busyKey)
+
+            return (
+              <article
+                key={card.id}
+                className="flex flex-col rounded-4xl border border-ink/10 bg-white p-3 shadow-card sm:p-4"
+              >
+                <div className="overflow-hidden rounded-3xl">
+                  <PostcardArt card={card} format={format} />
+                </div>
+
+                <div className="flex flex-1 flex-col px-1 pb-1 pt-4">
+                  <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-muted">
+                    Postal {card.number} · {activeFormat.ratio}
+                  </p>
+
+                  <div className="mt-3 grid grid-cols-2 gap-2">
+                    <ActionButton
+                      icon={Instagram}
+                      label="Instagram"
+                      tone="coral"
+                      busy={busyKey === `${card.id}:instagram`}
+                      disabled={isBusy}
+                      onClick={() => sharePostcard(card, 'instagram')}
+                    />
+                    <ActionButton
+                      icon={Facebook}
+                      label="Facebook"
+                      busy={busyKey === `${card.id}:facebook`}
+                      disabled={isBusy}
+                      onClick={() => sharePostcard(card, 'facebook')}
+                    />
+                    <ActionButton
+                      icon={Music2}
+                      label="TikTok"
+                      busy={busyKey === `${card.id}:tiktok`}
+                      disabled={isBusy}
+                      onClick={() => sharePostcard(card, 'tiktok')}
+                    />
+                    <ActionButton
+                      icon={Twitter}
+                      label="X (Twitter)"
+                      tone="dark"
+                      busy={busyKey === `${card.id}:x`}
+                      disabled={isBusy}
+                      onClick={() => sharePostcard(card, 'x')}
                     />
                   </div>
 
-                  <p className="mt-4 font-display text-lg font-extrabold leading-snug">
-                    «{data.quote}»
-                  </p>
-                  <p
-                    className={`mt-3 text-xs font-semibold uppercase tracking-[0.1em] ${
-                      isDark ? 'text-sage' : 'text-ink/70'
-                    }`}
+                  <button
+                    type="button"
+                    onClick={() => downloadPostcard(card)}
+                    disabled={isBusy}
+                    className="mt-2 inline-flex w-full items-center justify-center gap-2 rounded-full border border-dashed border-ink/25 bg-ivory px-4 py-2.5 text-xs font-bold text-ink transition hover:border-ink/40 hover:bg-white disabled:cursor-wait disabled:opacity-60"
                   >
-                    {data.caption}
-                  </p>
-
-                  <div
-                    className={`mt-auto flex items-center gap-1.5 border-t pt-4 ${
-                      isDark ? 'border-white/15' : 'border-ink/10'
-                    }`}
-                  >
-                    <button
-                      type="button"
-                      onClick={(event) => {
-                        event.stopPropagation()
-                        shareOnWhatsApp(data)
-                      }}
-                      aria-label={`Compartir en WhatsApp: ${data.quote}`}
-                      className={`grid h-9 w-9 place-items-center rounded-full transition ${iconTone}`}
-                    >
-                      <MessageCircle className="h-4 w-4" aria-hidden="true" />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={(event) => {
-                        event.stopPropagation()
-                        shareOnFacebook(data)
-                      }}
-                      aria-label={`Compartir en Facebook: ${data.quote}`}
-                      className={`grid h-9 w-9 place-items-center rounded-full transition ${iconTone}`}
-                    >
-                      <Facebook className="h-4 w-4" aria-hidden="true" />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={(event) => {
-                        event.stopPropagation()
-                        shareOnX(data)
-                      }}
-                      aria-label={`Compartir en X: ${data.quote}`}
-                      className={`grid h-9 w-9 place-items-center rounded-full transition ${iconTone}`}
-                    >
-                      <Twitter className="h-4 w-4" aria-hidden="true" />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={(event) => {
-                        event.stopPropagation()
-                        copyShare(data)
-                      }}
-                      className={`ml-auto inline-flex items-center gap-1.5 rounded-full px-3 py-2 text-[10px] font-bold uppercase tracking-[0.08em] transition ${
-                        isDark
-                          ? 'bg-white/10 text-white hover:bg-white/20'
-                          : 'bg-ink/10 text-ink hover:bg-ink hover:text-white'
-                      }`}
-                    >
-                      {isCopied ? (
-                        <Check className="h-3.5 w-3.5" aria-hidden="true" />
-                      ) : (
-                        <Copy className="h-3.5 w-3.5" aria-hidden="true" />
-                      )}
-                      {isCopied ? 'Copiado' : 'Copiar'}
-                    </button>
-                  </div>
-
-                  <p
-                    className={`mt-3 text-[10px] font-bold uppercase tracking-[0.12em] ${
-                      isDark ? 'text-white/45' : 'text-ink/45'
-                    }`}
-                  >
-                    Toca la postal para copiar
-                  </p>
-                </DriftCard>
-              )
-            })}
-          </DriftWall>
+                    {busyKey === `${card.id}:download:${format}` ? (
+                      <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+                    ) : (
+                      <Download className="h-4 w-4" aria-hidden="true" />
+                    )}
+                    Descargar Imagen PNG
+                  </button>
+                </div>
+              </article>
+            )
+          })}
         </div>
 
         <p className="mt-6 text-xs leading-relaxed text-muted">
-          El botón «Copiar» guarda el mensaje y el enlace para que los pegues en Instagram, TikTok o
-          donde prefieras. En WhatsApp, Facebook y X se abre la ventana de publicación.
+          En celulares, Instagram y Facebook se abren desde el menú nativo para compartir la imagen
+          directamente. En escritorio, el PNG se descarga y puedes adjuntarlo a tu publicación.
+          TikTok descarga siempre la versión vertical 9:16 y copia los hashtags. Las postales no
+          incluyen rostros ni datos personales.
         </p>
 
+        <div className="mt-16">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <p className="eyebrow text-muted">
+                <HeartHandshake className="h-4 w-4 text-coral" aria-hidden="true" />
+                Compromisos de la campaña
+              </p>
+              <h3 className="mt-3 font-display text-2xl font-extrabold leading-tight text-ink sm:text-3xl">
+                Más allá de la postal, cambiemos el trato
+              </h3>
+            </div>
+            <p className="max-w-md text-sm leading-relaxed text-muted">
+              Cuatro gestos concretos para practicar la dignidad en la acera, todos los días.
+            </p>
+          </div>
+
+          <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {COMMITMENTS.map((commitment) => {
+              const Icon = COMMITMENT_ICONS[commitment.icon] ?? HeartHandshake
+              const bodyTone = commitment.tone === 'ivory' ? 'text-muted' : 'text-ink/80'
+
+              return (
+                <article
+                  key={commitment.id}
+                  className={`flex h-full flex-col rounded-3xl border p-5 ${
+                    COMMITMENT_TONES[commitment.tone] ?? COMMITMENT_TONES.ivory
+                  }`}
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <span className="grid h-11 w-11 place-items-center rounded-2xl bg-white/60 text-ink">
+                      <Icon className="h-5 w-5" aria-hidden="true" />
+                    </span>
+                    <span
+                      className="font-display text-3xl font-extrabold leading-none text-ink/15"
+                      aria-hidden="true"
+                    >
+                      {commitment.number}
+                    </span>
+                  </div>
+                  <h4 className="mt-4 font-display text-lg font-extrabold leading-snug text-ink">
+                    {commitment.title}
+                  </h4>
+                  <p className={`mt-2 text-sm leading-relaxed ${bodyTone}`}>{commitment.text}</p>
+                </article>
+              )
+            })}
+          </div>
+        </div>
+
         <Reveal>
-          <div className="mt-8 flex flex-col gap-6 rounded-4xl border border-ink/10 bg-peach p-6 sm:p-9 lg:flex-row lg:items-center lg:justify-between">
+          <div className="mt-10 flex flex-col gap-6 rounded-4xl border border-ink/10 bg-peach p-6 sm:p-9 lg:flex-row lg:items-center lg:justify-between">
             <div>
               <p className="eyebrow text-ink">
                 <HeartHandshake className="h-4 w-4" aria-hidden="true" />
@@ -408,6 +469,8 @@ export default function Spread({ pledge, onPledge }) {
           </div>
         </Reveal>
       </div>
+
+      <canvas ref={canvasRef} className="hidden" aria-hidden="true" />
     </section>
   )
 }

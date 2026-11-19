@@ -6,6 +6,7 @@
 export const NAV_LINKS = [
   { id: 'realidad', label: 'La Realidad' },
   { id: 'testimonios', label: 'Testimonios' },
+  { id: 'galeria', label: 'Galería' },
   { id: 'derechos', label: 'Seguros y Derechos' },
   { id: 'acogida', label: 'Lugares de Acogida' },
   { id: 'difundir', label: 'Difundir la Voz' },
@@ -336,6 +337,148 @@ export const SHARE_CARDS = [
       'La calle no es delincuencia: es trabajo honrado. Una ciudad digna no mira hacia otro lado.',
     caption: 'La Paz camina con su gente · #CaseritoDigno',
     tone: 'coral',
+  },
+]
+
+/**
+ * Postales gráficas de impacto para redes sociales.
+ * El campo `theme` define la plantilla visual (DOM y canvas) y los colores
+ * se declaran aquí para mantener una sola fuente de verdad.
+ */
+export const POSTCARDS = [
+  {
+    id: 'dignidad',
+    number: '01',
+    theme: 'ink',
+    kicker: 'Caserito Digno · La Paz',
+    titleLines: ['La dignidad', 'no se regatea'],
+    accentLineIndex: 1,
+    body: 'Unos centavos que a ti no te cambian el día, para una familia en la calle son el almuerzo y el pasaje.',
+    bg: '#194350',
+    fg: '#FAF9F6',
+    accent: '#FF8382',
+    secondary: '#FFC2B4',
+    bodyColor: '#FFC2B4',
+    footerColor: 'rgba(250, 249, 246, 0.62)',
+    xPhrase: 'La dignidad no se regatea: el trabajo de la calle sostiene a La Paz.',
+  },
+  {
+    id: 'estomago',
+    number: '02',
+    theme: 'peach',
+    kicker: 'Caserito Digno · La Paz',
+    titleLines: ['Puesto cerrado', 'es estómago', 'vacío'],
+    accentLineIndex: -1,
+    body: '8 de cada 10 trabajadores en Bolivia viven del día a día sin seguro médico ni descanso.',
+    bg: '#FFC2B4',
+    fg: '#194350',
+    accent: '#FF8382',
+    secondary: '#9DBEB8',
+    bodyColor: 'rgba(25, 67, 80, 0.78)',
+    footerColor: 'rgba(25, 67, 80, 0.62)',
+    xPhrase: 'Puesto cerrado es estómago vacío. 8 de cada 10 trabajadores viven del día a día.',
+  },
+  {
+    id: 'trabajo',
+    number: '03',
+    theme: 'sage',
+    kicker: 'Caserito Digno · La Paz',
+    titleLines: ['Vender en la calle', 'es trabajo honrado,', 'no delito'],
+    accentLineIndex: 2,
+    body: 'Mira a los ojos, saluda y respeta a quien sostiene nuestra ciudad.',
+    bg: '#9DBEB8',
+    fg: '#194350',
+    accent: '#FF8382',
+    secondary: '#FFC2B4',
+    bodyColor: 'rgba(25, 67, 80, 0.82)',
+    footerColor: 'rgba(25, 67, 80, 0.62)',
+    xPhrase: 'Vender en la calle es trabajo honrado, no delito. Mira a los ojos y respeta.',
+  },
+  {
+    id: 'jornada',
+    number: '04',
+    theme: 'coral',
+    kicker: 'Caserito Digno · La Paz',
+    titleLines: ['12 horas', 'bajo el sol', 'y la lluvia'],
+    accentLineIndex: -1,
+    body: 'Exigimos espacios ordenados y trato humano, no decomisos ni abusos.',
+    bg: '#FF8382',
+    fg: '#194350',
+    accent: '#194350',
+    secondary: '#FFC2B4',
+    bodyColor: '#FAF9F6',
+    footerColor: 'rgba(250, 249, 246, 0.72)',
+    xPhrase: '12 horas bajo el sol y la lluvia. Exigimos espacios ordenados y trato humano.',
+  },
+]
+
+/** Formatos de exportación de las postales. */
+export const POSTCARD_FORMATS = {
+  story: { id: 'story', label: 'Historia / TikTok / Estado', ratio: '9:16', width: 1080, height: 1920 },
+  post: { id: 'post', label: 'Post Instagram / Facebook', ratio: '4:5', width: 1080, height: 1350 },
+}
+
+/**
+ * Galería documental "Miradas de la calle".
+ * Las rutas están listas para recibir las fotos reales en /public/galeria.
+ * Mientras tanto, `sceneKey` activa una ilustración vectorial de respaldo
+ * (siempre sin rostros, por privacidad) que se muestra si la imagen falla.
+ */
+export const GALLERY_PHOTOS = [
+  {
+    id: 'buenos-aires',
+    src: '/galeria/buenos-aires.jpg',
+    alt: 'Puesto nocturno de accesorios bajo el frío de la Av. Buenos Aires, sin rostros visibles.',
+    zone: 'Av. Buenos Aires · La Paz',
+    headline: 'Jornada nocturna',
+    summary: 'Venta de accesorios bajo el frío paceño.',
+    story:
+      'Cuando cae la noche, la avenida no se apaga: se enciende con luces frías, motores y manos que ordenan collares y fundas sobre una manta. El frío de altura se metía en los dedos, pero el puesto seguía abierto porque la jornada no termina cuando baja el sol, sino cuando alcanza para volver a casa. Ninguna cara se muestra aquí: solo el gesto paciente de sostener el día a día.',
+    sceneKey: 'night',
+  },
+  {
+    id: 'perez-velasco',
+    src: '/galeria/perez-velasco.jpg',
+    alt: 'Aguayo y tarima sobre la acera de la Pérez Velasco, escena documental sin rostros.',
+    zone: 'Zona Pérez Velasco · La Paz',
+    headline: 'El aguayo y la tarima',
+    summary: '18 años sosteniendo a una familia desde la acera.',
+    story:
+      'Sobre la tarima se acomodan las bolsas de pasankalla, los hilos y el aguayo que carga años de historia. Ahí, en pocos metros de acera, se sostiene una familia entera: la venta paga el almuerzo, los útiles y las medicinas. El relato se cuenta desde los objetos y las manos, no desde los rostros, porque la dignidad también se protege cuidando la identidad de quien trabaja.',
+    sceneKey: 'aguayo',
+  },
+  {
+    id: 'plaza-eguino',
+    src: '/galeria/plaza-eguino.jpg',
+    alt: 'Puesto y paraguas en la Plaza Eguino bajo sol, lluvia y tráfico, sin rostros.',
+    zone: 'Plaza Eguino · Villa Dolores',
+    headline: 'El clima y la espera',
+    summary: 'Exposición diaria al sol de altura, la lluvia y el tráfico.',
+    story:
+      'El sol de altura quema temprano; a media tarde, una lluvia repentina obliga a cubrir la mercadería con plásticos y paraguas. En Plaza Eguino el clima cambia más rápido que las ventas, y el tráfico no da tregua. La espera es parte del trabajo: horas de pie, mirando pasar autos, calculando si el día alcanzará para el pasaje de vuelta.',
+    sceneKey: 'weather',
+  },
+  {
+    id: 'comercio-itinerante',
+    src: '/galeria/comercio-itinerante.jpg',
+    alt: 'Joven caminando con una bandeja de productos por una calle paceña, visto de espaldas.',
+    zone: 'Comercio itinerante · La Paz',
+    headline: 'Juventud sin empleo formal',
+    summary: 'Caminando kilómetros por falta de oportunidades.',
+    story:
+      'La mochila carga mercadería y la bandeja se equilibra entre el hombro y el brazo. Cada mañana, la ruta empieza en una parada de minibús y sigue por calles, ferias y oficinas. No hay contrato ni escritorio: hay kilómetros. La falta de empleo formal empuja a miles de jóvenes a inventarse un trabajo en movimiento, con la esperanza de que algún día el esfuerzo se convierta en oportunidad.',
+    sceneKey: 'walk',
+  },
+  {
+    id: 'solidaridad-caseras',
+    src: '/galeria/solidaridad-caseras.jpg',
+    alt: 'Dos caseras compartiendo un termo y resguardando sus puestos, sin rostros visibles.',
+    zone: 'Mercados y ferias · La Paz',
+    headline: 'Solidaridad entre caseras',
+    summary: 'Cuidarse entre pares frente a operativos e incertidumbre.',
+    story:
+      'Cuando aparece un operativo, una voz recorre la feria: “guarda, ya vienen”. Entre caseras se avisa, se presta un espacio, se comparte un termo de té y se cuida la mercadería de la vecina mientras va al baño. Esa red de apoyo mutuo es también una forma de resistencia: frente a la incertidumbre, la solidaridad sostiene lo que la indiferencia quiere borrar.',
+    sceneKey: 'solidarity',
   },
 ]
 

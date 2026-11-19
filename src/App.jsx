@@ -3,6 +3,7 @@ import Navbar from './components/Navbar'
 import Hero from './components/Hero'
 import Reality from './components/Reality'
 import Testimonials from './components/Testimonials'
+import Gallery from './components/Gallery'
 import Rights from './components/Rights'
 import Directory from './components/Directory'
 import Spread from './components/Spread'
@@ -106,6 +107,7 @@ export default function App() {
           testimonials={testimonials}
           onOpenTestimonial={openTestimonialModal}
         />
+        <Gallery />
         <Rights />
         <Directory />
         <Spread pledge={pledge} onPledge={handlePledge} />
